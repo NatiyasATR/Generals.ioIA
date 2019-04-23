@@ -3,7 +3,9 @@ package generals.ioIA.generals.ioIA;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.EnumSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -118,6 +120,8 @@ public final class Utilities {
 			resul[i]=nuevo.get(i).intValue();
     	return resul;  
     }
+    
+
     /*
     public static int[] casillaACoordenadas(int casilla,int ancho) {
     	int[] resul = new int[2];

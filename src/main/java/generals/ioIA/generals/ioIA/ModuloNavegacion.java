@@ -8,11 +8,10 @@ import java.util.ArrayList;
 public class ModuloNavegacion {
 	
 	private Bot bot;
-	BufferedWriter writer;
 	
 	ModuloNavegacion(Bot bot) throws IOException{
 		this.bot=bot;
-		BufferedWriter writer = new BufferedWriter(new FileWriter("C:/Users/ALVARO/Desktop/ModuloNavegacionLog"+bot.getBotId()+".txt"));
+		//BufferedWriter writer = new BufferedWriter(new FileWriter("C:/Users/ALVARO/Desktop/ModuloNavegacionLog"+bot.getBotId()+".txt"));
 	}
 	
 	public int[] calcularCaminoEntrePuntos(int origen,int destino) {//usando A*

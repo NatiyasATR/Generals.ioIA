@@ -48,7 +48,7 @@ public class Bot extends Thread{
 
 		conectado = false;
 		moduloPercepcion = new ModuloPercepcion(this);
-		moduloDecision = new ArbolDecision(this);
+		moduloDecision = new MaquinaEstados(this);//MaquinaEstados o ArbolDecisiones
 		moduloNavegacion = new ModuloNavegacion(this);
 		lock = new ReentrantLock();
 		condicionConectado =  lock.newCondition();
@@ -245,7 +245,7 @@ public class Bot extends Thread{
 		//System.out.println(argsjson);
 		moduloPercepcion.actualizarPartidaDatos(argsjson);
 		//Tomar decision y actuar
-		Movimiento movimiento=moduloDecision.tomaDecision();
+		Movimiento movimiento=moduloDecision.siguienteMovimiento();
 		if(movimiento!=null) {
 			System.out.println("Ataque desde "+movimiento.origen+" hacia "+movimiento.destino);
 			socket.emit("attack",movimiento.origen,movimiento.destino,movimiento.is50);

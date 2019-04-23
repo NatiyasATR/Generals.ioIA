@@ -6,13 +6,16 @@ import java.util.ArrayList;
 public abstract /*abstract*/ class ModuloDecision {
 	
 	protected Bot bot;
-	
+	protected int[] movimientoActual;
+	protected int posicionMovimientoActual;
 	
 	protected static final int distanciaSeguridad = 5; //distancia a la que un ejercito enemigo se considera amenaza
 	protected static final float proporcionSuperioridad = 1.1f; //1.1 significa que el ejercito que buscamos debe ser un 10% superior a la amenaza 
 	
 	ModuloDecision(Bot bot){
 		this.bot=bot;
+		movimientoActual = null;
+		posicionMovimientoActual =-1;
 	}
 	
 	public int[] movimientoAleatorio() {
@@ -80,7 +83,32 @@ public abstract /*abstract*/ class ModuloDecision {
 	
 	
 	
-	public abstract Movimiento tomaDecision() ;
+	public Movimiento siguienteMovimiento() {
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		
+		
+		if(movimientoActual ==null||moduloPercepcion.unidadesCasilla(movimientoActual[posicionMovimientoActual])<2) {//seleccionamos un nuevo objetivo si no tenemos uno o si no tenemos unidades para continuar el actual
+			tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
+		}
+		
+		Movimiento resul = new Movimiento();
+		resul.origen=movimientoActual[posicionMovimientoActual];
+		resul.destino=movimientoActual[posicionMovimientoActual+1];
+		resul.is50 = false;
+		
+		posicionMovimientoActual++;
+		
+		if(posicionMovimientoActual==movimientoActual.length-1) {// si hemos llegado al final del camino lo ponemos a null de nuevo
+			movimientoActual = null;
+			posicionMovimientoActual =-1;
+		}
+		
+		return resul;
+		
+	}
+	
+	public abstract void  tomaDecision();//Debe actualizar movimientoActual y posicionMovimientoActual
+	
 	
 	protected int[] generalEnPeligro(int distanciaSeguridad) {//retorna un vector con la pocicion del general y la posicion de la amenaza, si esta en peligro, si no retorna null 
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
@@ -385,6 +413,15 @@ public abstract /*abstract*/ class ModuloDecision {
 			}
 		}
 		return casillas;
+	}
+	
+	protected boolean casillaEstaEnLista(int casilla, ArrayList<Integer> lista) {
+		for(int i=0;i<lista.size();i++) {
+			if(lista.get(i).intValue()==casilla) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

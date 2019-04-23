@@ -1,5 +1,7 @@
 package generals.ioIA.generals.ioIA;
 
+import java.util.ArrayList;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,7 +51,25 @@ public class ModuloPercepcion {
 			JSONArray mapa_parche_JSON = argsjson.getJSONArray("map_diff");
 
 			generales=Utilities.JSONArraytoArray(generales_JSON);
-			ciudades=Utilities.parchear(ciudades,ciudades_parche_JSON);
+			ciudades=Utilities.parchear(ciudades,ciudades_parche_JSON);//Hay que hacer que no se nos olviden
+			/*
+		 	ArrayList<Integer> nuevoSinOlvidos = new ArrayList<Integer>(0);
+				int i=0;
+				int j=0;
+				while(i<antiguo.length && j<nuevo.size()) {
+			if(antiguo[i]==nuevo.get(j).intValue()) {
+				nuevoSinOlvidos.add(antiguo[i]);
+				i++;
+				j++;
+			}else if(antiguo[i]>nuevo.get(j).intValue()){
+				nuevoSinOlvidos.add(antiguo[i]);
+				j++;
+			}else {
+				nuevoSinOlvidos.add(antiguo[i]);
+				i++;
+			}
+		}
+			 */
 			mapa=Utilities.parchear(mapa,mapa_parche_JSON);
 			
 			ancho=mapa[0];
