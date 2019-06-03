@@ -13,8 +13,8 @@ public abstract class ModuloDecision {
 	protected static final int distanciaSeguridad = 5; //distancia a la que un ejercito enemigo se considera amenaza
 	protected static final float proporcionSuperioridad = 1.1f; //1.1 significa que el ejercito que buscamos debe ser un 10% superior a la amenaza 
 	protected static final float factorDeSeguridadTurno = 0.2f; //0.5 significa que en el turno 100 deben permanecer 50 unidades en una ciudad o el general
-	protected static final int faseInicial = 25; //Turno en el que se considera acabada la fase inicial
-	
+	protected static final int faseInicial = 75; //Turno en el que se considera acabada la fase inicial
+	protected static final int minimoTamañoExploracion = 10; //minimo numero de unidades para explorar
 	
 	ModuloDecision(Bot bot){
 		this.bot=bot;
@@ -70,9 +70,9 @@ public abstract class ModuloDecision {
 		}while(moduloPercepcion.terrenoCasilla(destino)==-2||moduloPercepcion.terrenoCasilla(destino)==-4);
 		
 		int[] resul = bot.getModuloNavegacion().calcularCaminoEntrePuntos(origen, destino);
-		System.out.println("Nuevo camino seleccionado");
-		for(int i=0;i<resul.length;i++)
-			System.out.print(" "+resul[i]+" ("+moduloPercepcion.terrenoCasilla(resul[i])+") ");
+		//System.out.println("Nuevo camino seleccionado");
+		//for(int i=0;i<resul.length;i++)
+			//System.out.print(" "+resul[i]+" ("+moduloPercepcion.terrenoCasilla(resul[i])+") ");
 	
 		return resul;
 
@@ -89,7 +89,13 @@ public abstract class ModuloDecision {
 		
 		if(movimientoActual ==null||moduloPercepcion.unidadesCasilla(movimientoActual[posicionMovimientoActual])<2) {//seleccionamos un nuevo objetivo si no tenemos uno o si no tenemos unidades para continuar el actual
 			tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
+		}else {
+			int origen = movimientoActual[posicionMovimientoActual];
+			//Si el movimiento no se puede continuar por que nos hemos quedado sin unidades cogemos uno nuevo
+			if(moduloPercepcion.terrenoCasilla(origen)!=moduloPercepcion.getEquipo()||moduloPercepcion.unidadesCasilla(origen)<=1)
+				tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
 		}
+		
 		
 		Movimiento resul = new Movimiento();
 		int origen = movimientoActual[posicionMovimientoActual];
@@ -229,7 +235,7 @@ public abstract class ModuloDecision {
 					int unidadesDisponibles = ejercitoDisponible(casilla);
 					int tereno = moduloPercepcion.terrenoCasilla(casilla);
 					int equipo = moduloPercepcion.getEquipo();
-					if(tereno == equipo && unidadesDisponibles > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
+					if(tereno == equipo && unidadesDisponibles >= tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
 						return casilla;
 				}
 			}

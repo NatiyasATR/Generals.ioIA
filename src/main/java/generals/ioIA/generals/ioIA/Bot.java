@@ -245,12 +245,13 @@ public class Bot extends Thread{
 		//System.out.println(argsjson);
 		moduloPercepcion.actualizarPartidaDatos(argsjson);
 		//Tomar decision y actuar
-		Movimiento movimiento=moduloDecision.siguienteMovimiento();
-		if(movimiento!=null) {
-			System.out.println("Ataque desde "+movimiento.origen+" hacia "+movimiento.destino);
-			socket.emit("attack",movimiento.origen,movimiento.destino,movimiento.is50);
-		}else System.out.println("No se ataca");
-		
+		if(moduloPercepcion.getAtaquesPendientes()==0) {
+			Movimiento movimiento=moduloDecision.siguienteMovimiento();
+			if(movimiento!=null) {
+				System.out.println("Ataque desde "+movimiento.origen+" hacia "+movimiento.destino);
+				socket.emit("attack",movimiento.origen,movimiento.destino,movimiento.is50);
+			}else System.out.println("No se ataca");
+		}else System.out.println("Ataques Pendientes");
 	}
 	
 	private void win(Object... args) {

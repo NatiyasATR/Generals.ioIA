@@ -1,6 +1,8 @@
 package generals.ioIA.generals.ioIA;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +21,7 @@ public class ModuloPercepcion {
 	private int equipo;
 	private String repeticionId;
 	private int turno;
+	private int ataquesPendientes;
 	
 
 	
@@ -30,6 +33,7 @@ public class ModuloPercepcion {
 		equipo=-10;
 		ciudadesConocidas = new ArrayList<Integer>();
 		casillasInacesibles = new ArrayList<Integer>();
+		ataquesPendientes = 0;
 	}
 	
 	public void iniciarPartidaDatos(JSONObject argsjson) {
@@ -48,37 +52,19 @@ public class ModuloPercepcion {
 	
 	public void actualizarPartidaDatos(JSONObject argsjson){
 		try {
-			
-			int ataquesPendientes = argsjson.getInt("attackIndex");
+			//System.out.println(argsjson);
+			ataquesPendientes = argsjson.getInt("attackIndex");
 			JSONArray ciudades_parche_JSON = argsjson.getJSONArray("cities_diff");
 			JSONArray generales_JSON = argsjson.getJSONArray("generals");
 			turno = argsjson.getInt("turn");
 			JSONArray mapa_parche_JSON = argsjson.getJSONArray("map_diff");
 
 			generales=Utilities.JSONArraytoArray(generales_JSON);
+			System.out.println("Generales ------------------ "+Arrays.toString(generales));
 			ciudades=Utilities.parchear(ciudades,ciudades_parche_JSON);
 			
 			actualizarCiudadesConocidas();
 			
-			//Hay que hacer que no se nos olviden
-			/*
-		 	ArrayList<Integer> nuevoSinOlvidos = new ArrayList<Integer>(0);
-				int i=0;
-				int j=0;
-				while(i<antiguo.length && j<nuevo.size()) {
-			if(antiguo[i]==nuevo.get(j).intValue()) {
-				nuevoSinOlvidos.add(antiguo[i]);
-				i++;
-				j++;
-			}else if(antiguo[i]>nuevo.get(j).intValue()){
-				nuevoSinOlvidos.add(antiguo[i]);
-				j++;
-			}else {
-				nuevoSinOlvidos.add(antiguo[i]);
-				i++;
-			}
-		}
-			 */
 			mapa=Utilities.parchear(mapa,mapa_parche_JSON);
 			
 			ancho=mapa[0];
@@ -158,6 +144,23 @@ public class ModuloPercepcion {
 		return(mapa[2+casilla+ancho*alto]);
 	}
 	
+	public ArrayList<Integer> ciudadesPerdidasDeVista() {
+		ArrayList<Integer> resul = new  ArrayList<Integer>();
+		
+		for(Integer ciudad : ciudadesConocidas) {
+			boolean esVisible = false;
+			for(int i=0;i<ciudades.length;i++){
+				if(ciudades[i]==ciudad.intValue()) {
+					esVisible = true;
+					break;
+				}	
+			}
+			if(!esVisible)
+				resul.add(ciudad);
+		}
+		return resul;
+	}
+	
 	public String getRepeticionId() {
 		return repeticionId;
 	}
@@ -196,6 +199,10 @@ public class ModuloPercepcion {
 */
 	public int getTurno() {
 		return turno;
+	}
+
+	public int getAtaquesPendientes() {
+		return ataquesPendientes;
 	}
 	
 	

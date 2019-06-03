@@ -135,4 +135,14 @@ public final class Utilities {
     	return coordenadas[0] + ancho * coordenadas[1] ;
     }
     */
+    
+    public int[] ArrayListIntegerToIntArray(ArrayList<Integer> list) {
+    	int[] resul = new int[list.size()];
+    	int i=0;
+    	for(Integer n : list) {
+    		resul[i]=n.intValue();
+    		i++;
+    	}
+    	return resul;
+    }
 }

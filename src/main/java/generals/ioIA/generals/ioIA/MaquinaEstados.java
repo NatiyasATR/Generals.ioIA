@@ -1,15 +1,18 @@
 package generals.ioIA.generals.ioIA;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MaquinaEstados extends ModuloDecision{
 	
 	private String estado;
 	private int[] datosEstado;
+	private String subestadoExpansion;
 	
 	MaquinaEstados(Bot bot) {
 		super(bot);
 		estado = "Expansion";
+		subestadoExpansion = "Expansion";
 	}
 
 	public void tomaDecision() {
@@ -19,24 +22,13 @@ public class MaquinaEstados extends ModuloDecision{
 		actualizarEstado();
 		
 		if(estado ==  "Expansion") {
-			System.out.println("Expansion");
-			ArrayList<Integer>casillas = casillasNormalesNoPropias();
-			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
-			int casilla = buscarCasillaValidaMasCercana(casillas,general);
-			int ejercito = ejercitoMasGrande();
-			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
-			System.out.println("origen destino: "+ejercito+" "+casilla);
-			if(movimientoActual==null) {
-				moduloPercepcion.getCasillasInacesibles().add(casilla);
-			}
-				
-			posicionMovimientoActual = 0;
+			tomaDecisionSubstadoExpansion();
 			
 		}else if(estado ==  "Defensa") {
 			System.out.println("Defensa");
 			int general = datosEstado[0];
 			int unidadesEnemigas = datosEstado[1];
-			System.out.println(movimientoActual);
+			System.out.println(Arrays.toString(movimientoActual));
 			movimientoActual = defenderContra(general,unidadesEnemigas);
 			posicionMovimientoActual = 0;
 			
@@ -44,14 +36,14 @@ public class MaquinaEstados extends ModuloDecision{
 			System.out.println("Ataque");
 			int objetivo = datosEstado[0];
 			int ejercito = datosEstado[1];
-			System.out.println(movimientoActual);
+			System.out.println(Arrays.toString(movimientoActual));
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito, objetivo);
 			posicionMovimientoActual = 0;
 		}else if(estado ==  "Conquista") {
 			System.out.println("Conquista");
 			int objetivo = datosEstado[0];
 			int ejercito = datosEstado[1];
-			System.out.println(movimientoActual);
+			System.out.println(Arrays.toString(movimientoActual));
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito, objetivo);
 			posicionMovimientoActual = 0;
 		}else if(estado ==  "Reagrupar") {
@@ -60,11 +52,13 @@ public class MaquinaEstados extends ModuloDecision{
 			if(ejercitos.size()>1)
 				movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercitos.get(1), ejercitos.get(0));
 			else movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercitos.get(0), ejercitos.get(0));
-			System.out.println(movimientoActual);
+			System.out.println(Arrays.toString(movimientoActual));
 			posicionMovimientoActual = 0;
 		}
 		
 	}
+	
+	
 	
 	
 	
@@ -171,4 +165,88 @@ public class MaquinaEstados extends ModuloDecision{
 			
 		}
 	}
+	
+	
+	private void tomaDecisionSubstadoExpansion() {
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		ModuloNavegacion moduloNavegacion = bot.getModuloNavegacion();
+
+		
+		actualizarSubestadoExpansion();
+		
+		
+
+		
+		if(subestadoExpansion=="Expansion") {
+			System.out.println("Expansion");
+			ArrayList<Integer>casillas = casillasNormalesNoPropias();
+			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
+			int casilla = buscarCasillaValidaMasCercana(casillas,general);
+			int ejercito = buscarEjercitoMasCercano(2,casilla);
+			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
+			System.out.println("origen destino: "+ejercito+" "+casilla);
+			if(movimientoActual==null) {
+				moduloPercepcion.getCasillasInacesibles().add(casilla);
+			}
+				
+			posicionMovimientoActual = 0;
+			
+			
+		}else if(subestadoExpansion=="ExplorarCiudadesPerdidasDeVista") {
+			System.out.println("ExplorarCiudadesPerdidasDeVista");
+			ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
+			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
+			int casilla = buscarCasillaValidaMasCercana(ciudadesPerdidasDeVista,general);
+			int ejercito = buscarEjercitoMasCercano(minimoTamañoExploracion,casilla);
+			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
+			System.out.println("origen destino: "+ejercito+" "+casilla);
+			if(movimientoActual==null) {
+				moduloPercepcion.getCasillasInacesibles().add(casilla);
+			}
+				
+			posicionMovimientoActual = 0;
+			
+			
+		}else if(subestadoExpansion=="ExplorarDesconocido") {
+			System.out.println("ExplorarDesconocido");
+			int alto = bot.getModuloPercepcion().getAlto();
+			int ancho = bot.getModuloPercepcion().getAncho();
+			ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
+			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
+			int destino;
+			do{//buscamos un destino que sea una casilla no visible
+				destino = (int) (Math.random()*alto*ancho);
+			}while(moduloPercepcion.terrenoCasilla(destino)!=-3);
+			
+			int ejercito = buscarEjercitoMasCercano(minimoTamañoExploracion,destino);
+			if(ejercito == -1)
+				ejercito = ejercitoMasGrande();
+			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,destino);
+			System.out.println("origen destino: "+ejercito+" "+destino);
+			if(movimientoActual==null) {
+				moduloPercepcion.getCasillasInacesibles().add(destino);
+			}
+				
+			posicionMovimientoActual = 0;
+			
+		}
+	}
+	
+	private void actualizarSubestadoExpansion() {
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
+		
+		if(subestadoExpansion=="Expansion") {
+			if(ciudadesPerdidasDeVista.size()>0)
+				subestadoExpansion="ExplorarCiudadesPerdidasDeVista";
+			else subestadoExpansion="ExplorarDesconocido";
+			
+		}else if(subestadoExpansion=="ExplorarCiudadesPerdidasDeVista") {
+			subestadoExpansion="ExplorarDesconocido";
+			
+		}else if(subestadoExpansion=="ExplorarDesconocido") {
+			subestadoExpansion="Expansion";
+		}
+	}
 }
+
