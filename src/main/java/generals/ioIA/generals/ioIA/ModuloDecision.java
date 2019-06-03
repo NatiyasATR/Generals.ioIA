@@ -3,14 +3,18 @@ package generals.ioIA.generals.ioIA;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public abstract /*abstract*/ class ModuloDecision {
+public abstract class ModuloDecision {
 	
 	protected Bot bot;
 	protected int[] movimientoActual;
 	protected int posicionMovimientoActual;
 	
+	
 	protected static final int distanciaSeguridad = 5; //distancia a la que un ejercito enemigo se considera amenaza
 	protected static final float proporcionSuperioridad = 1.1f; //1.1 significa que el ejercito que buscamos debe ser un 10% superior a la amenaza 
+	protected static final float factorDeSeguridadTurno = 0.2f; //0.5 significa que en el turno 100 deben permanecer 50 unidades en una ciudad o el general
+	protected static final int faseInicial = 25; //Turno en el que se considera acabada la fase inicial
+	
 	
 	ModuloDecision(Bot bot){
 		this.bot=bot;
@@ -49,10 +53,6 @@ public abstract /*abstract*/ class ModuloDecision {
 			}
 			
 		}
-		
-		
-		
-		
 		return null;
 	}
 	
@@ -92,20 +92,24 @@ public abstract /*abstract*/ class ModuloDecision {
 		}
 		
 		Movimiento resul = new Movimiento();
-		resul.origen=movimientoActual[posicionMovimientoActual];
-		resul.destino=movimientoActual[posicionMovimientoActual+1];
-		resul.is50 = false;
+		int origen = movimientoActual[posicionMovimientoActual];
+		int destino = movimientoActual[posicionMovimientoActual+1];
+		resul.origen=origen;
+		resul.destino=destino;
+		if(moduloPercepcion.esCiudad(origen)||moduloPercepcion.esNuestroGeneral(origen))
+			resul.is50 = true;
+		else resul.is50 = false;
 		
 		posicionMovimientoActual++;
 		
-		if(posicionMovimientoActual==movimientoActual.length-1) {// si hemos llegado al final del camino lo ponemos a null de nuevo
+		if(posicionMovimientoActual>=movimientoActual.length-1) {// si hemos llegado al final del camino lo ponemos a null de nuevo
 			movimientoActual = null;
 			posicionMovimientoActual =-1;
 		}
 		
 		return resul;
-		
 	}
+	
 	
 	public abstract void  tomaDecision();//Debe actualizar movimientoActual y posicionMovimientoActual
 	
@@ -144,13 +148,46 @@ public abstract /*abstract*/ class ModuloDecision {
 		
 		return null;
 	}
-
+ 
 	
 	protected int[] ciudadEnPeligro(int distanciaSeguridad) {//TODO
 		return null;
 		
 	}
 	
+	protected int peligroAlrededor(int casillaOrigen,int distanciaSeguridad){//TODO
+		
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int peligro = 0;;
+		int ancho  = moduloPercepcion.getAncho();
+		int alto  = moduloPercepcion.getAlto();
+		int equipo = moduloPercepcion.getEquipo();
+		Coordenadas coordenadasCasillaOrigen = new Coordenadas();
+		coordenadasCasillaOrigen.setCoordenadasCasilla(casillaOrigen, ancho);
+				
+		//creamos rectangulo alrededor de la casilla y buscamos peligros
+		int x1 = Math.max(coordenadasCasillaOrigen.getX()-distanciaSeguridad,0);
+		int x2 = Math.min(coordenadasCasillaOrigen.getX()+distanciaSeguridad,ancho-1);
+		int y1 = Math.max(coordenadasCasillaOrigen.getY()-distanciaSeguridad,0);
+		int y2 = Math.min(coordenadasCasillaOrigen.getY()+distanciaSeguridad,alto-1);
+		
+		for(int i=x1;i<=x2;i++) {
+			for(int j=y1;j<=y2;j++) {
+				Coordenadas coordenadasCasilla = new Coordenadas(i,j);
+				int casilla = coordenadasCasilla.getCasilla(ancho);
+				int terreno = moduloPercepcion.terrenoCasilla(casilla);
+				int unidades = moduloPercepcion.unidadesCasilla(casilla);
+				
+				if(terreno>=0&&terreno!=equipo) {// Es territorio de un rival
+					
+					if(unidades>1) { // Tiene ejercito suficiente para moverlo 
+						peligro+=unidades;
+					}
+				}
+			}
+		}
+		return peligro;
+	}
 	
 	
 	protected int[] defenderContra(int casillaEnPeligro,int unidadesEnemigas) {//retorna un camino para mover un ejercito lo suficientemente grande para defender un punto
@@ -189,10 +226,10 @@ public abstract /*abstract*/ class ModuloDecision {
 				if(0<=x&&x<ancho&&0<=y&&y<alto) {// no nos hemos salido del tablero
 					Coordenadas coordenadas = new Coordenadas(x,y);
 					int casilla = coordenadas.getCasilla(ancho);
-					int unidades = moduloPercepcion.unidadesCasilla(casilla);
+					int unidadesDisponibles = ejercitoDisponible(casilla);
 					int tereno = moduloPercepcion.terrenoCasilla(casilla);
 					int equipo = moduloPercepcion.getEquipo();
-					if(tereno == equipo && unidades > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
+					if(tereno == equipo && unidadesDisponibles > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
 						return casilla;
 				}
 			}
@@ -204,10 +241,10 @@ public abstract /*abstract*/ class ModuloDecision {
 				if(0<=x&&x<ancho&&0<=y&&y<alto) {// no nos hemos salido del tablero
 					Coordenadas coordenadas = new Coordenadas(x,y);
 					int casilla = coordenadas.getCasilla(ancho);
-					int unidades = moduloPercepcion.unidadesCasilla(casilla);
+					int unidadesDisponibles = ejercitoDisponible(casilla);
 					int tereno = moduloPercepcion.terrenoCasilla(casilla);
 					int equipo = moduloPercepcion.getEquipo();
-					if(tereno == equipo && unidades > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
+					if(tereno == equipo && unidadesDisponibles > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
 						return casilla;
 				}
 			}
@@ -218,10 +255,10 @@ public abstract /*abstract*/ class ModuloDecision {
 				if(0<=x&&x<ancho&&0<=y&&y<alto) {// no nos hemos salido del tablero
 					Coordenadas coordenadas = new Coordenadas(x,y);
 					int casilla = coordenadas.getCasilla(ancho);
-					int unidades = moduloPercepcion.unidadesCasilla(casilla);
+					int unidadesDisponibles = ejercitoDisponible(casilla);
 					int tereno = moduloPercepcion.terrenoCasilla(casilla);
 					int equipo = moduloPercepcion.getEquipo();
-					if(tereno == equipo && unidades > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
+					if(tereno == equipo && unidadesDisponibles > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
 						return casilla;
 				}
 			}
@@ -233,10 +270,10 @@ public abstract /*abstract*/ class ModuloDecision {
 				if(0<=x&&x<ancho&&0<=y&&y<alto) {// no nos hemos salido del tablero
 					Coordenadas coordenadas = new Coordenadas(x,y);
 					int casilla = coordenadas.getCasilla(ancho);
-					int unidades = moduloPercepcion.unidadesCasilla(casilla);
+					int unidadesDisponibles = ejercitoDisponible(casilla);
 					int tereno = moduloPercepcion.terrenoCasilla(casilla);
 					int equipo = moduloPercepcion.getEquipo();
-					if(tereno == equipo && unidades > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
+					if(tereno == equipo && unidadesDisponibles > tamañoMinimo)// si controlamos esa casilla y el ejercito es suficientemente grande
 						return casilla;
 				}
 			}
@@ -254,18 +291,23 @@ public abstract /*abstract*/ class ModuloDecision {
 		int ancho  = moduloPercepcion.getAncho();
 		int alto  = moduloPercepcion.getAlto();
 		int maximo = -1;
+		int unidadesMaximo = -1;
 		for(int i=0;i<alto*ancho;i++) {
 			int terreno = moduloPercepcion.terrenoCasilla(i);
 			int equipo = moduloPercepcion.getEquipo();
 			if(terreno==equipo) {//controlamos la casilla
 				if(maximo==-1){// si no est asignado lo asignamos
 					maximo = i;
+					unidadesMaximo = ejercitoDisponible(i);
 				}
 				else {
-					int unidades = moduloPercepcion.unidadesCasilla(i);
-					int unidadesMaximo = moduloPercepcion.unidadesCasilla(maximo);
-					if(unidades>unidadesMaximo)
+					int unidadesDisponibles = ejercitoDisponible(i);
+					//System.out.println("Ejercito Disponible "+unidadesDisponibles);
+					if(unidadesDisponibles>unidadesMaximo) {
+						unidadesMaximo = unidadesDisponibles;
 						maximo = i;
+					}
+						
 				}
 			}
 		}
@@ -283,12 +325,12 @@ public abstract /*abstract*/ class ModuloDecision {
 			int terreno = moduloPercepcion.terrenoCasilla(i);
 			int equipo = moduloPercepcion.getEquipo();
 			if(terreno==equipo) {//controlamos la casilla
-				int unidades = moduloPercepcion.unidadesCasilla(i);
+				int unidadesDisponibles = ejercitoDisponible(i);
 				//insertamos en orden
 				int j=0;
 				while(j<ejercitos.size()) {
 					int ejercito = ejercitos.get(j);
-					if(moduloPercepcion.unidadesCasilla(ejercito)<moduloPercepcion.unidadesCasilla(i))
+					if(ejercitoDisponible(ejercito)<unidadesDisponibles)
 						break;
 					j++;
 				}
@@ -317,6 +359,7 @@ public abstract /*abstract*/ class ModuloDecision {
 	
 	protected ArrayList<Integer> ciudadesNoPropiasConocidas() {// devuelve la posicion de una ciudad neutral si conocemos la posicion de alguna
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		//ArrayList<Integer> ciudadesConocidas = moduloPercepcion.getCiudadesConocidas();
 		int ciudades[] = moduloPercepcion.getCiudades();
 		ArrayList<Integer> ciudadesNeutrales = new ArrayList<Integer>();
 		int equipo = moduloPercepcion.getEquipo();
@@ -374,7 +417,7 @@ public abstract /*abstract*/ class ModuloDecision {
 		int ancho = moduloPercepcion.getAncho();
 		ArrayList<Integer> ejercitos = new ArrayList<Integer>();
 		for(int i=0;i<alto*ancho;i++) {
-			if(moduloPercepcion.terrenoCasilla(i)==moduloPercepcion.getEquipo()&&moduloPercepcion.unidadesCasilla(i)>=tamañoMinimo)
+			if(moduloPercepcion.terrenoCasilla(i)==moduloPercepcion.getEquipo()&&ejercitoDisponible(i)>=tamañoMinimo)
 				ejercitos.add(i);
 		}
 		return ejercitos;
@@ -391,8 +434,10 @@ public abstract /*abstract*/ class ModuloDecision {
 			if(terrenoCasilla!=equipo&&terrenoCasilla!=-2&&terrenoCasilla!=-4) {// no es propia y no es una montaña
 				int ciudades[] = moduloPercepcion.getCiudades();
 				int generales[] = moduloPercepcion.getGenerales();
+				ArrayList<Integer> casillasInacesibles = moduloPercepcion.getCasillasInacesibles();
 				boolean esCiudad = false;
 				boolean esGeneral = false;
+				boolean esInacesible = false;
 				
 				for(int j=0;j<ciudades.length;j++) {//comprobamos si es una ciudad
 					if(i==ciudades[j]) {
@@ -408,7 +453,14 @@ public abstract /*abstract*/ class ModuloDecision {
 					}
 				}
 				
-				if(!esCiudad&&!esGeneral)//si no es ciudad ni general
+				for(Integer j :casillasInacesibles) {
+					if(i==j.intValue()) {
+						esInacesible=true;
+						break;
+					}
+				}
+				
+				if(!esCiudad&&!esGeneral&&!esInacesible)//si no es ciudad ni general ni es inacesible
 					casillas.add(i);
 			}
 		}
@@ -423,5 +475,27 @@ public abstract /*abstract*/ class ModuloDecision {
 		}
 		return false;
 	}
+	
+	protected int defensaMinima(int casilla) {
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int turno = moduloPercepcion.getTurno();
+		int peligro = peligroAlrededor(casilla,distanciaSeguridad);
+		int defensaPeligros = Math.round(peligro*proporcionSuperioridad)+1;
+		int defensaMinimaTurno = Math.round(turno*factorDeSeguridadTurno);
+		return Math.max(defensaPeligros, defensaMinimaTurno);
+	}
+	
+	protected int ejercitoDisponible(int casilla) {
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int ejercito = moduloPercepcion.unidadesCasilla(casilla);
+		if(moduloPercepcion.esNuestroGeneral(casilla)||moduloPercepcion.esCiudad(casilla)) {
+			int defensaMinima = defensaMinima(casilla);
+			//System.out.println("defensa minima "+defensaMinima);
+			if((ejercito/2)>defensaMinima)
+				return ejercito/2;
+			else return 0;
+		}else return ejercito;
+	}
+	
 	
 }

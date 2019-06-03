@@ -10,12 +10,15 @@ public class ModuloPercepcion {
 
 	private Bot bot;
 	private int ciudades[];
+	private ArrayList<Integer> ciudadesConocidas;
+	private ArrayList<Integer> casillasInacesibles;
 	private int mapa[];
 	private int generales[];
 	private int ancho;
 	private int alto;
 	private int equipo;
 	private String repeticionId;
+	private int turno;
 	
 
 	
@@ -25,6 +28,8 @@ public class ModuloPercepcion {
 		ciudades=new int[0];
 		mapa=new int[0];
 		equipo=-10;
+		ciudadesConocidas = new ArrayList<Integer>();
+		casillasInacesibles = new ArrayList<Integer>();
 	}
 	
 	public void iniciarPartidaDatos(JSONObject argsjson) {
@@ -47,11 +52,15 @@ public class ModuloPercepcion {
 			int ataquesPendientes = argsjson.getInt("attackIndex");
 			JSONArray ciudades_parche_JSON = argsjson.getJSONArray("cities_diff");
 			JSONArray generales_JSON = argsjson.getJSONArray("generals");
-			int turno = argsjson.getInt("turn");
+			turno = argsjson.getInt("turn");
 			JSONArray mapa_parche_JSON = argsjson.getJSONArray("map_diff");
 
 			generales=Utilities.JSONArraytoArray(generales_JSON);
-			ciudades=Utilities.parchear(ciudades,ciudades_parche_JSON);//Hay que hacer que no se nos olviden
+			ciudades=Utilities.parchear(ciudades,ciudades_parche_JSON);
+			
+			actualizarCiudadesConocidas();
+			
+			//Hay que hacer que no se nos olviden
 			/*
 		 	ArrayList<Integer> nuevoSinOlvidos = new ArrayList<Integer>(0);
 				int i=0;
@@ -98,8 +107,42 @@ public class ModuloPercepcion {
 		
 	}
 	
+	void actualizarCiudadesConocidas() {
+		for(int i=0;i<ciudades.length;i++) {
+			if(ciudadesConocidas.isEmpty())
+				ciudadesConocidas.add(ciudades[i]);
+			else {
+				for(int j=0;j<ciudadesConocidas.size();j++) {
+					if(ciudades[i]==ciudadesConocidas.get(j).intValue())
+						break;
+					if(ciudades[i]<ciudadesConocidas.get(j).intValue()) {
+						ciudadesConocidas.add(j,ciudades[i]);
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	
 	public int posicionGeneral(int general) {
 		return generales[general];
+	}
+	
+	public boolean esCiudad(int casilla){
+		for(Integer ciudad : ciudadesConocidas)
+		{
+			if(casilla==ciudad.intValue())
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean esNuestroGeneral(int casilla){
+		
+		if(casilla==generales[equipo])
+			return true;	
+		return false;
 	}
 	
 	public int[] getGenerales() {
@@ -134,6 +177,27 @@ public class ModuloPercepcion {
 	public int getEquipo() {
 		return equipo;
 	}
+	
+	public ArrayList<Integer> getCiudadesConocidas() {
+		return ciudadesConocidas;
+	}
+
+	public ArrayList<Integer> getCasillasInacesibles() {
+		return casillasInacesibles;
+	}
+/*
+	public void setCasillasInacesibles(ArrayList<Integer> casillasInacesibles) {
+		this.casillasInacesibles = casillasInacesibles;
+	}
+
+	public void setCiudadesConocidas(ArrayList<Integer> ciudadesConocidas) {
+		this.ciudadesConocidas = ciudadesConocidas;
+	}
+*/
+	public int getTurno() {
+		return turno;
+	}
+	
 	
 	
 }

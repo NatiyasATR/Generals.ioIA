@@ -24,8 +24,12 @@ public class MaquinaEstados extends ModuloDecision{
 			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
 			int casilla = buscarCasillaValidaMasCercana(casillas,general);
 			int ejercito = ejercitoMasGrande();
-			System.out.println(movimientoActual);
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
+			System.out.println("origen destino: "+ejercito+" "+casilla);
+			if(movimientoActual==null) {
+				moduloPercepcion.getCasillasInacesibles().add(casilla);
+			}
+				
 			posicionMovimientoActual = 0;
 			
 		}else if(estado ==  "Defensa") {
@@ -68,6 +72,7 @@ public class MaquinaEstados extends ModuloDecision{
 	
 	private void actualizarEstado() {
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int turno = moduloPercepcion.getTurno();
 		int[] generalEnPeligro = generalEnPeligro(distanciaSeguridad);
 		ArrayList<Integer> generalesEnemigos = generalesEnemigosConocidos();
 		int generalElegido = -1;
@@ -91,9 +96,9 @@ public class MaquinaEstados extends ModuloDecision{
 		for(int i=0;i<ciudadesEnemigas.size();i++) {//buscamos combinaciones ciudad enemigo - ejercito
 			int ciudad = ciudadesEnemigas.get(i);
 			int unidadesCiudad = moduloPercepcion.unidadesCasilla(ciudad);
-			System.out.println(ciudad);
-			System.out.println(unidadesCiudad);
-			System.out.println(Math.round(unidadesCiudad*proporcionSuperioridad)+1);
+			//System.out.println(ciudad);
+			//System.out.println(unidadesCiudad);
+			//System.out.println(Math.round(unidadesCiudad*proporcionSuperioridad)+1);
 			ArrayList<Integer> ejercitos = ejercitosPropiosMayoresQue(Math.round(unidadesCiudad*proporcionSuperioridad)+1);
 			if(ejercitos.size()>0) {// existe al menos un ejercito que pueda atacar esta ciudad
 				ciudadElegida = ciudad;
@@ -118,10 +123,10 @@ public class MaquinaEstados extends ModuloDecision{
 				estado = "Ataque";
 				datosEstado = new int[]{generalElegido,ejercitoElegidoContraGeneral};
 			
-			}else if(ciudadesEnemigas.size()>0&&ciudadElegida!=-1) {//hay una ciudad objetivo y tenemos ejercito
+			}else if(ciudadesEnemigas.size()>0&&ciudadElegida!=-1&&turno>faseInicial) {//hay una ciudad objetivo, tenemos ejercito y ya no estamos en la fase inicial
 				estado = "Conquista";
 				datosEstado = new int[]{ciudadElegida,ejercitoElegidoContraCiudad};
-			}else if((generalesEnemigos.size()>0&&generalElegido==-1)||(ciudadesEnemigas.size()>0&&ciudadElegida==-1)) {//tenemos objetivos pero no ejercito
+			}else if(((generalesEnemigos.size()>0&&generalElegido==-1)||(ciudadesEnemigas.size()>0&&ciudadElegida==-1))&&turno>faseInicial) {//tenemos objetivos pero no ejercito  y ya no estamos en la fase inicial
 				estado = "Reagrupar";
 			}// si no hay nada mas que hacer seguimos expandiendo
 			

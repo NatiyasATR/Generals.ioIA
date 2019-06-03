@@ -44,7 +44,7 @@ public class App
         	
         	/************************************************/
 			final Bot bot1 = new Bot(1);
-			//final Bot bot2 = new Bot(2);
+			final Bot bot2 = new Bot(2);
 			
 			
 			Random rg = new Random();
@@ -58,7 +58,7 @@ public class App
                 public void windowClosing(WindowEvent e) {
                     System.out.println("WindowClosing");
                     bot1.desconectar();
-        			//bot2.desconectar();
+        			bot2.desconectar();
                     System.exit(0);
                 }
         	});
@@ -69,7 +69,7 @@ public class App
         	brendirse.setAction(new AbstractAction() {
 				public void actionPerformed(ActionEvent e) {
 					bot1.rendirse();
-					//bot2.rendirse();
+					bot2.rendirse();
 				}
         	});
         	brendirse.setText("Rendirse");
@@ -80,7 +80,7 @@ public class App
         	bPnull.setAction(new AbstractAction() {
 				public void actionPerformed(ActionEvent e) {
 					bot1.setPartida(null,null);
-					//bot2.setPartida(null,null);
+					bot2.setPartida(null,null);
 				}
         	});
         	bPnull.setText("Proxima Partida null");
@@ -91,13 +91,13 @@ public class App
 			
 			
 
-			//bot1.setPartida("Privada","111111");
-			//bot2.setPartida("Privada","111111");
-        	bot1.setPartida("FFA",null);
+			bot1.setPartida("Privada","111111");
+			bot2.setPartida("Privada","111111");
+        	//bot1.setPartida("FFA",null);
         	
 			
 			bot1.start();
-			//bot2.start();
+			bot2.start();
 			
 			System.out.println("\""+System.in.read()+"\"");
 			System.in.skip(System.in.available());
