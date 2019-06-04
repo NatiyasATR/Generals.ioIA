@@ -12,8 +12,8 @@ public abstract class ModuloDecision {
 	
 	protected static final int distanciaSeguridad = 5; //distancia a la que un ejercito enemigo se considera amenaza
 	protected static final float proporcionSuperioridad = 1.1f; //1.1 significa que el ejercito que buscamos debe ser un 10% superior a la amenaza 
-	protected static final float factorDeSeguridadTurno = 0.2f; //0.5 significa que en el turno 100 deben permanecer 50 unidades en una ciudad o el general
-	protected static final int faseInicial = 75; //Turno en el que se considera acabada la fase inicial
+	protected static final float factorDeSeguridadTurno = 0.1f; //0.5 significa que en el turno 100 deben permanecer 50 unidades en una ciudad o el general
+	protected static final int faseInicial = 100; //Turno en el que se considera acabada la fase inicial
 	protected static final int minimoTamañoExploracion = 10; //minimo numero de unidades para explorar
 	
 	ModuloDecision(Bot bot){

@@ -106,6 +106,13 @@ public class Bot extends Thread{
 
         });
 		
+		socket.on("stars",  new Emitter.Listener() {
+        	public void call(Object... args) {
+        		System.out.println(args[0]);
+        	}
+
+        });
+		
 		socket.connect();
 		
 		
@@ -165,6 +172,19 @@ public class Bot extends Thread{
         	}
         });
 		
+		socket.on("chat_message",new Emitter.Listener() {
+        	public void call(Object... args) {
+        		JSONObject argsjson = (JSONObject) args[1];
+        		try {
+					System.out.println(argsjson.get("text"));
+					socket.emit("set_force_start",gameId, true);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        });
+		
 		lock.lock();
 		try{
 			while(!partidaFinalizada) {
@@ -211,9 +231,18 @@ public class Bot extends Thread{
 		
 		socket.on("chat_message",new Emitter.Listener() {
         	public void call(Object... args) {
-        		System.out.println(args[0]);
+        		JSONObject argsjson = (JSONObject) args[1];
+        		try {
+					System.out.println(argsjson.get("text"));
+					socket.emit("set_force_start", true);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
         	}
         });
+		
+		
 		
 		lock.lock();
 		try{
@@ -260,6 +289,7 @@ public class Bot extends Thread{
 		ta.setText(text);
 		salirPartida();
 		try{
+			socket.emit("stars_and_rank", this.botId);
 			partidaFinalizada = true;
 			condicionFinalizada.signalAll();
 		
@@ -277,6 +307,7 @@ public class Bot extends Thread{
 		
 		lock.lock();
 		try{
+			socket.emit("stars_and_rank", this.botId);
 			partidaFinalizada = true;
 			condicionFinalizada.signalAll();
 		

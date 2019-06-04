@@ -28,23 +28,26 @@ public class MaquinaEstados extends ModuloDecision{
 			System.out.println("Defensa");
 			int general = datosEstado[0];
 			int unidadesEnemigas = datosEstado[1];
-			System.out.println(Arrays.toString(movimientoActual));
+			
 			movimientoActual = defenderContra(general,unidadesEnemigas);
+			System.out.println(Arrays.toString(movimientoActual));
 			posicionMovimientoActual = 0;
 			
 		}else if(estado ==  "Ataque") {
 			System.out.println("Ataque");
 			int objetivo = datosEstado[0];
 			int ejercito = datosEstado[1];
-			System.out.println(Arrays.toString(movimientoActual));
+			
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito, objetivo);
+			System.out.println(Arrays.toString(movimientoActual));
 			posicionMovimientoActual = 0;
 		}else if(estado ==  "Conquista") {
 			System.out.println("Conquista");
 			int objetivo = datosEstado[0];
 			int ejercito = datosEstado[1];
-			System.out.println(Arrays.toString(movimientoActual));
+			
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito, objetivo);
+			System.out.println(Arrays.toString(movimientoActual));
 			posicionMovimientoActual = 0;
 		}else if(estado ==  "Reagrupar") {
 			System.out.println("Reagrupar");
@@ -192,6 +195,21 @@ public class MaquinaEstados extends ModuloDecision{
 			posicionMovimientoActual = 0;
 			
 			
+		}else if(subestadoExpansion=="ExplorarGeneralesPerdidosDeVista") {
+			System.out.println("ExplorarGeneralesPerdidosDeVista");
+			ArrayList<Integer> generalesPerdidosDeVista = moduloPercepcion.generalesPerdidosDeVista();
+			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
+			int casilla = buscarCasillaValidaMasCercana(generalesPerdidosDeVista,general);
+			int ejercito = buscarEjercitoMasCercano(minimoTamañoExploracion,casilla);
+			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
+			System.out.println("origen destino: "+ejercito+" "+casilla);
+			if(movimientoActual==null) {
+				moduloPercepcion.getCasillasInacesibles().add(casilla);
+			}
+				
+			posicionMovimientoActual = 0;
+			
+			
 		}else if(subestadoExpansion=="ExplorarCiudadesPerdidasDeVista") {
 			System.out.println("ExplorarCiudadesPerdidasDeVista");
 			ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
@@ -234,18 +252,25 @@ public class MaquinaEstados extends ModuloDecision{
 	
 	private void actualizarSubestadoExpansion() {
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
-		ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
+		
 		
 		if(subestadoExpansion=="Expansion") {
-			if(ciudadesPerdidasDeVista.size()>0)
-				subestadoExpansion="ExplorarCiudadesPerdidasDeVista";
-			else subestadoExpansion="ExplorarDesconocido";
+			subestadoExpansion="ExplorarDesconocido";
+			
+		}else if(subestadoExpansion=="ExplorarGeneralesPerdidosDeVista") {
+			subestadoExpansion="ExplorarDesconocido";
 			
 		}else if(subestadoExpansion=="ExplorarCiudadesPerdidasDeVista") {
 			subestadoExpansion="ExplorarDesconocido";
 			
 		}else if(subestadoExpansion=="ExplorarDesconocido") {
-			subestadoExpansion="Expansion";
+			ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
+			ArrayList<Integer> generalesPerdidosDeVista = moduloPercepcion.generalesPerdidosDeVista();
+			if(generalesPerdidosDeVista.size()>0)
+				subestadoExpansion="ExplorarGeneralesPerdidosDeVista";
+			else if(ciudadesPerdidasDeVista.size()>0)
+				subestadoExpansion="ExplorarCiudadesPerdidasDeVista";
+			else subestadoExpansion="Expansion";
 		}
 	}
 }

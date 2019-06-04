@@ -16,6 +16,7 @@ public class ModuloPercepcion {
 	private ArrayList<Integer> casillasInacesibles;
 	private int mapa[];
 	private int generales[];
+	private ArrayList<Integer> generalesConocidos;
 	private int ancho;
 	private int alto;
 	private int equipo;
@@ -28,19 +29,24 @@ public class ModuloPercepcion {
 	
 	ModuloPercepcion(Bot bot){
 		this.bot=bot;
+		
+	}
+	
+	public void iniciarPartidaDatos(JSONObject argsjson) {
+		
 		ciudades=new int[0];
 		mapa=new int[0];
 		equipo=-10;
 		ciudadesConocidas = new ArrayList<Integer>();
 		casillasInacesibles = new ArrayList<Integer>();
+		generalesConocidos = null;
 		ataquesPendientes = 0;
-	}
-	
-	public void iniciarPartidaDatos(JSONObject argsjson) {
+		
 		try {
 			repeticionId = argsjson.getString("replay_id");
 			equipo=argsjson.getInt("playerIndex");
 			System.out.println(argsjson);
+			
     		
     		
 		} catch (JSONException e) {
@@ -60,7 +66,9 @@ public class ModuloPercepcion {
 			JSONArray mapa_parche_JSON = argsjson.getJSONArray("map_diff");
 
 			generales=Utilities.JSONArraytoArray(generales_JSON);
-			System.out.println("Generales ------------------ "+Arrays.toString(generales));
+			
+			actualizarGeneralesConocidos();
+			
 			ciudades=Utilities.parchear(ciudades,ciudades_parche_JSON);
 			
 			actualizarCiudadesConocidas();
@@ -72,7 +80,7 @@ public class ModuloPercepcion {
 			
 			//Terreno(Unidades)
 			System.out.println(bot.getBotId()+": Turno "+turno);
-			System.out.println(" estado de las unidades en el mapa");
+			//System.out.println(" estado de las unidades en el mapa");
 			/*
 			int k=2;
 			for(int i=0;i<alto;i++){
@@ -108,6 +116,22 @@ public class ModuloPercepcion {
 				}
 			}
 		}
+	}
+	
+	void actualizarGeneralesConocidos() {
+		if(generalesConocidos==null){
+			generalesConocidos = new ArrayList<Integer>(generales.length);
+			for(int i=0;i<generales.length;i++) {
+				generalesConocidos.add(generales[i]);
+			}
+			
+		}else {
+			for(int i=0;i<generales.length;i++) {
+				if(generales[i]!=-1)
+					generalesConocidos.set(i, generales[i]);
+			}
+		}
+		
 	}
 	
 	
@@ -157,6 +181,23 @@ public class ModuloPercepcion {
 			}
 			if(!esVisible)
 				resul.add(ciudad);
+		}
+		return resul;
+	}
+	
+	public ArrayList<Integer> generalesPerdidosDeVista() {
+		ArrayList<Integer> resul = new  ArrayList<Integer>();
+		
+		for(Integer general : generalesConocidos) {
+			boolean esVisible = false;
+			for(int i=0;i<generales.length;i++){
+				if(generales[i]==general.intValue()) {
+					esVisible = true;
+					break;
+				}	
+			}
+			if(!esVisible)
+				resul.add(general);
 		}
 		return resul;
 	}
