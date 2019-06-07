@@ -8,7 +8,10 @@ public abstract class ModuloDecision {
 	protected Bot bot;
 	protected int[] movimientoActual;
 	protected int posicionMovimientoActual;
-	
+	private int avisos;
+	//Para la busqueda de generales
+	private int direccion;//1 izquierda, 2 derecha, 3 abajo, 4 arriba, -1 no masignada
+	protected int posicion;
 	
 	protected static final int distanciaSeguridad = 5; //distancia a la que un ejercito enemigo se considera amenaza
 	protected static final float proporcionSuperioridad = 1.1f; //1.1 significa que el ejercito que buscamos debe ser un 10% superior a la amenaza 
@@ -20,6 +23,8 @@ public abstract class ModuloDecision {
 		this.bot=bot;
 		movimientoActual = null;
 		posicionMovimientoActual =-1;
+		avisos=0;
+		direccion = -1;
 	}
 	
 	public int[] movimientoAleatorio() {
@@ -85,21 +90,52 @@ public abstract class ModuloDecision {
 	
 	public Movimiento siguienteMovimiento() {
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int ancho = moduloPercepcion.getAncho();
 		
 		
-		if(movimientoActual ==null||moduloPercepcion.unidadesCasilla(movimientoActual[posicionMovimientoActual])<2) {//seleccionamos un nuevo objetivo si no tenemos uno o si no tenemos unidades para continuar el actual
+		//seleccionamos un nuevo objetivo si no tenemos uno
+		if(movimientoActual ==null) {
 			tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
-		}else {
-			int origen = movimientoActual[posicionMovimientoActual];
-			//Si el movimiento no se puede continuar por que nos hemos quedado sin unidades cogemos uno nuevo
-			if(moduloPercepcion.terrenoCasilla(origen)!=moduloPercepcion.getEquipo()||moduloPercepcion.unidadesCasilla(origen)<=1)
-				tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
+			avisos=0;
+		}
+		
+		int origen = movimientoActual[posicionMovimientoActual];
+		int destino = movimientoActual[posicionMovimientoActual+1];
+		
+		if(destino == -14)//significa que el bot debe buscar al general enemigo
+		{
+			Movimiento resul = siguienteMovimientoBusquedaGeneral();
+			
+			
+			//si no hay mas casillas del enemigo o nos hemos quedado sin unidades, selecccionamos un nuevo objetivo
+			if(resul == null||moduloPercepcion.terrenoCasilla(posicion)!=moduloPercepcion.getEquipo()||moduloPercepcion.unidadesCasilla(posicion)<=1) {
+				avisos++;
+				if(avisos>3) {// a los tres avisos selecccionamos un nuevo movimiento
+					tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
+					avisos=0;
+				}
+				return null;
+			}else {
+				posicion = resul.destino;
+				System.out.println("Realizamos movimiento buscando general "+resul.origen+" "+resul.destino);
+				return resul;
+			}
+			
+		}
+		
+		
+		
+		//Si el movimiento no se puede continuar por que nos hemos quedado sin unidades damos un aviso
+		if(moduloPercepcion.terrenoCasilla(origen)!=moduloPercepcion.getEquipo()||moduloPercepcion.unidadesCasilla(origen)<=1)
+			avisos++;
+		if(avisos>3) {// a los tres avisos selecccionamos un nuevo movimiento
+			tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
+			avisos=0;
 		}
 		
 		
 		Movimiento resul = new Movimiento();
-		int origen = movimientoActual[posicionMovimientoActual];
-		int destino = movimientoActual[posicionMovimientoActual+1];
+		
 		resul.origen=origen;
 		resul.destino=destino;
 		if(moduloPercepcion.esCiudad(origen)||moduloPercepcion.esNuestroGeneral(origen))
@@ -114,9 +150,74 @@ public abstract class ModuloDecision {
 		}
 		
 		return resul;
+		
+		
+		
 	}
 	
 	
+	protected Movimiento siguienteMovimientoBusquedaGeneral() {
+		System.out.println("siguienteMovimientoBusquedaGeneral");
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		boolean nuevaDireccion;
+		int ancho = moduloPercepcion.getAncho();
+		int alto = moduloPercepcion.getAlto();
+		Coordenadas coordenadasPosicion = new Coordenadas();
+		coordenadasPosicion.setCoordenadasCasilla(posicion, ancho);
+		
+		nuevaDireccion = false;
+		
+		//si todabia no hemos decidido la direccion, elegimos una nueva direccion
+		if(direccion==-1){
+			nuevaDireccion = true;
+		}else {
+			Coordenadas coordenadasDestino = AplicarMovimiento(coordenadasPosicion,direccion);
+			if(coordenadasDestino == null)//si nos salimos del mapa, elegimos una nueva direccion
+				nuevaDireccion = true;
+			else {
+				//si nos salimos del territorio del enemigo, elegimos una nueva direccion
+				int terreno = moduloPercepcion.terrenoCasilla(coordenadasDestino.getCasilla(ancho));
+				if(terreno<0||terreno==moduloPercepcion.getEquipo())
+					nuevaDireccion = true;
+			}
+		}
+		if(nuevaDireccion == true) {
+			//elegimos una nueva direccion
+			for(int i=1;i<=4;i++) {
+				nuevaDireccion = false;
+				Coordenadas coordenadasDestino = AplicarMovimiento(coordenadasPosicion,i);
+				if(coordenadasDestino == null) {//si nos salimos del mapa, elegimos una nueva direccion
+					nuevaDireccion = true;
+					System.out.println("Direccion "+i+" nos salimos del mapa");
+				}
+				else {
+					//si nos salimos del territorio del enemigo, elegimos una nueva direccion
+					int casilla = coordenadasDestino.getCasilla(ancho);
+					int terreno = moduloPercepcion.terrenoCasilla(casilla);
+					if(terreno<0||terreno==moduloPercepcion.getEquipo()) {
+						nuevaDireccion = true;
+						System.out.println("Direccion "+i+" no es una casilla "+casilla+" valida "+terreno);
+					}
+				}
+				if(nuevaDireccion == false) {
+					direccion = i;
+					break;
+				}else if(i==4)
+					return null;
+			}
+		}
+		
+		Coordenadas coordenadasDestino = AplicarMovimiento(coordenadasPosicion,direccion);
+		
+		Movimiento resul = new Movimiento();
+		resul.origen = posicion;
+		resul.destino = coordenadasDestino.getCasilla(ancho);
+		if(moduloPercepcion.esCiudad(posicion)||moduloPercepcion.esNuestroGeneral(posicion))
+			resul.is50 = true;
+		else resul.is50 = false;
+		return resul;
+	}
+
 	public abstract void  tomaDecision();//Debe actualizar movimientoActual y posicionMovimientoActual
 	
 	
@@ -473,6 +574,50 @@ public abstract class ModuloDecision {
 		return casillas;
 	}
 	
+	protected ArrayList<Integer> casillasNormalesEnemigas() {//devuelve las casillas no propia, pertenecientes a un jugador que no sean montañas ni ciudades ni generales 
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int alto = moduloPercepcion.getAlto();
+		int ancho = moduloPercepcion.getAncho();
+		ArrayList<Integer> casillas = new ArrayList<Integer>();
+		for(int i=0;i<alto*ancho;i++) {
+			int terrenoCasilla = moduloPercepcion.terrenoCasilla(i);
+			int equipo = moduloPercepcion.getEquipo();
+			if(terrenoCasilla>=0&&terrenoCasilla!=equipo) {// no es propia y no es una montaña
+				int ciudades[] = moduloPercepcion.getCiudades();
+				int generales[] = moduloPercepcion.getGenerales();
+				ArrayList<Integer> casillasInacesibles = moduloPercepcion.getCasillasInacesibles();
+				boolean esCiudad = false;
+				boolean esGeneral = false;
+				boolean esInacesible = false;
+				
+				for(int j=0;j<ciudades.length;j++) {//comprobamos si es una ciudad
+					if(i==ciudades[j]) {
+						esCiudad=true;
+						break;
+					}
+				}
+				
+				for(int j=0;j<generales.length;j++) {//comprobamos si es un general
+					if(i==generales[j]) {
+						esGeneral=true;
+						break;
+					}
+				}
+				
+				for(Integer j :casillasInacesibles) {
+					if(i==j.intValue()) {
+						esInacesible=true;
+						break;
+					}
+				}
+				
+				if(!esCiudad&&!esGeneral&&!esInacesible)//si no es ciudad ni general ni es inacesible
+					casillas.add(i);
+			}
+		}
+		return casillas;
+	}
+	
 	protected boolean casillaEstaEnLista(int casilla, ArrayList<Integer> lista) {
 		for(int i=0;i<lista.size();i++) {
 			if(lista.get(i).intValue()==casilla) {
@@ -501,6 +646,46 @@ public abstract class ModuloDecision {
 				return ejercito/2;
 			else return 0;
 		}else return ejercito;
+	}
+	
+	protected Coordenadas AplicarMovimiento(Coordenadas origen,int direc) {
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		
+		int ancho = moduloPercepcion.getAncho();
+		int alto = moduloPercepcion.getAlto();
+		int x = origen.getX();
+		int y = origen.getY();
+		Coordenadas destino = new Coordenadas(x,y);
+		if(direc==1) {
+			x--;
+			if(x<0) {
+				return null;
+			}else {
+				destino.setX(x);
+			}	
+		}else if(direc==2) {
+			x++;
+			if(x>= ancho) {
+				return null;
+			}else {
+				destino.setX(x);
+			}	
+		}else if(direc==3) {
+			y--;
+			if(y<0) {
+				return null;
+			}else {
+				destino.setY(y);
+			}	
+		}else if(direc==4) {
+			y++;
+			if(y>= alto) {
+				return null;
+			}else {
+				destino.setY(y);
+			}	
+		}else return null;
+		return destino;
 	}
 	
 	

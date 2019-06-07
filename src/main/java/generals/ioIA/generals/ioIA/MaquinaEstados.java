@@ -12,7 +12,7 @@ public class MaquinaEstados extends ModuloDecision{
 	MaquinaEstados(Bot bot) {
 		super(bot);
 		estado = "Expansion";
-		subestadoExpansion = "Expansion";
+		subestadoExpansion = "ExplorarDesconocido";
 	}
 
 	public void tomaDecision() {
@@ -102,9 +102,9 @@ public class MaquinaEstados extends ModuloDecision{
 				ejercitoElegidoContraCiudad = buscarCasillaValidaMasCercana(ejercitos,ciudad);
 			}
 		}
-		System.out.println(ciudadesEnemigas);
-		System.out.println(ciudadElegida);
-		System.out.println(ejercitoElegidoContraCiudad);
+		//System.out.println(ciudadesEnemigas);
+		//System.out.println(ciudadElegida);
+		//System.out.println(ejercitoElegidoContraCiudad);
 		
 		
 		
@@ -186,6 +186,8 @@ public class MaquinaEstados extends ModuloDecision{
 			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
 			int casilla = buscarCasillaValidaMasCercana(casillas,general);
 			int ejercito = buscarEjercitoMasCercano(2,casilla);
+			if(ejercito == -1)
+				ejercito = ejercitoMasGrande();
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
 			System.out.println("origen destino: "+ejercito+" "+casilla);
 			if(movimientoActual==null) {
@@ -201,6 +203,8 @@ public class MaquinaEstados extends ModuloDecision{
 			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
 			int casilla = buscarCasillaValidaMasCercana(generalesPerdidosDeVista,general);
 			int ejercito = buscarEjercitoMasCercano(minimoTamañoExploracion,casilla);
+			if(ejercito == -1)
+				ejercito = ejercitoMasGrande();
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
 			System.out.println("origen destino: "+ejercito+" "+casilla);
 			if(movimientoActual==null) {
@@ -216,6 +220,8 @@ public class MaquinaEstados extends ModuloDecision{
 			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
 			int casilla = buscarCasillaValidaMasCercana(ciudadesPerdidasDeVista,general);
 			int ejercito = buscarEjercitoMasCercano(minimoTamañoExploracion,casilla);
+			if(ejercito == -1)
+				ejercito = ejercitoMasGrande();
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
 			System.out.println("origen destino: "+ejercito+" "+casilla);
 			if(movimientoActual==null) {
@@ -232,38 +238,50 @@ public class MaquinaEstados extends ModuloDecision{
 			ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
 			int general = moduloPercepcion.posicionGeneral(moduloPercepcion.getEquipo());
 			int destino;
+			int terreno;
+			
+			
 			do{//buscamos un destino que sea una casilla no visible
 				destino = (int) (Math.random()*alto*ancho);
-			}while(moduloPercepcion.terrenoCasilla(destino)!=-3);
+				terreno = moduloPercepcion.terrenoCasilla(destino);
+			}while(terreno!=-3);
+			//}while(terreno>0&&terreno!=moduloPercepcion.getEquipo());
 			
 			int ejercito = buscarEjercitoMasCercano(minimoTamañoExploracion,destino);
 			if(ejercito == -1)
 				ejercito = ejercitoMasGrande();
 			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,destino);
-			System.out.println("origen destino: "+ejercito+" "+destino);
 			if(movimientoActual==null) {
 				moduloPercepcion.getCasillasInacesibles().add(destino);
+				posicionMovimientoActual = -1;
+			}else {
+				System.out.println("origen destino: "+ejercito+" "+destino);
+				if(movimientoActual==null) {
+					moduloPercepcion.getCasillasInacesibles().add(destino);
+				}
+					
+				posicionMovimientoActual = 0;
 			}
-				
-			posicionMovimientoActual = 0;
 			
+			
+		}else if(subestadoExpansion=="BuscarGeneralEnemigo") {
+			//System.out.println("--------------------Buscando General Enemigo--------------------");
+			int casilla = datosEstado[0];
+			int ejercito = buscarEjercitoMasCercano(minimoTamañoExploracion,casilla);
+			if(ejercito==-1)
+				ejercito = ejercitoMasGrande();
+			movimientoActual = moduloNavegacion.calcularCaminoEntrePuntos(ejercito,casilla);
+			movimientoActual[movimientoActual.length-1]=-14;//indica que al llegar tiene que buascar al general
+			posicionMovimientoActual = 0;
+			posicion = movimientoActual[movimientoActual.length-2];
+			System.out.println(Arrays.toString(movimientoActual));
 		}
 	}
 	
 	private void actualizarSubestadoExpansion() {
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
 		
-		
-		if(subestadoExpansion=="Expansion") {
-			subestadoExpansion="ExplorarDesconocido";
-			
-		}else if(subestadoExpansion=="ExplorarGeneralesPerdidosDeVista") {
-			subestadoExpansion="ExplorarDesconocido";
-			
-		}else if(subestadoExpansion=="ExplorarCiudadesPerdidasDeVista") {
-			subestadoExpansion="ExplorarDesconocido";
-			
-		}else if(subestadoExpansion=="ExplorarDesconocido") {
+		if(subestadoExpansion=="ExplorarDesconocido") {
 			ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
 			ArrayList<Integer> generalesPerdidosDeVista = moduloPercepcion.generalesPerdidosDeVista();
 			if(generalesPerdidosDeVista.size()>0)
@@ -271,6 +289,26 @@ public class MaquinaEstados extends ModuloDecision{
 			else if(ciudadesPerdidasDeVista.size()>0)
 				subestadoExpansion="ExplorarCiudadesPerdidasDeVista";
 			else subestadoExpansion="Expansion";
+			
+		}else if(subestadoExpansion=="ExplorarGeneralesPerdidosDeVista") {
+			subestadoExpansion="Expansion";
+			
+		}else if(subestadoExpansion=="ExplorarCiudadesPerdidasDeVista") {
+			subestadoExpansion="Expansion";
+			
+		}else if(subestadoExpansion=="Expansion") {
+			ArrayList<Integer> casillasEnemigas = casillasNormalesEnemigas();
+			if(casillasEnemigas.isEmpty()) {
+				subestadoExpansion="ExplorarDesconocido";
+			}
+			else { 
+				subestadoExpansion="BuscarGeneralEnemigo";
+				datosEstado = new int[1];
+				datosEstado[0] = casillasEnemigas.get((int)Math.random()*casillasEnemigas.size()).intValue();
+			}
+		
+		}else if(subestadoExpansion=="BuscarGeneralEnemigo") {
+			subestadoExpansion="ExplorarDesconocido";
 		}
 	}
 }
