@@ -18,6 +18,7 @@ public abstract class ModuloDecision {
 	protected static final float factorDeSeguridadTurno = 0.1f; //0.5 significa que en el turno 100 deben permanecer 50 unidades en una ciudad o el general
 	protected static final int faseInicial = 100; //Turno en el que se considera acabada la fase inicial
 	protected static final int minimoTamañoExploracion = 10; //minimo numero de unidades para explorar
+	protected static final int turnosCadaCiudad  = 50; //50 significa que en el turno 200 querremos 4 ciudades
 	
 	ModuloDecision(Bot bot){
 		this.bot=bot;
@@ -138,9 +139,12 @@ public abstract class ModuloDecision {
 		
 		resul.origen=origen;
 		resul.destino=destino;
+		/*
 		if(moduloPercepcion.esCiudad(origen)||moduloPercepcion.esNuestroGeneral(origen))
 			resul.is50 = true;
 		else resul.is50 = false;
+		*/
+		resul.is50 = false;
 		
 		posicionMovimientoActual++;
 		
@@ -449,13 +453,31 @@ public abstract class ModuloDecision {
 		return ejercitos; 	
 	}
 	
-	protected ArrayList<Integer> ciudadesNeutralConocidas() {// devuelve la posicion de una ciudad neutral si conocemos la posicion de alguna
+	
+	protected ArrayList<Integer> ciudadesPropias() {// devuelve las posiciones de las ciudad neutrales que conocemos
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int ciudades[] = moduloPercepcion.getCiudades();
+		ArrayList<Integer> ciudadesNeutrales = new ArrayList<Integer>();
+		int equipo = moduloPercepcion.getEquipo();
+		
+		for(int i=0;i<ciudades.length;i++) {
+			if(moduloPercepcion.terrenoCasilla(ciudades[i])==equipo) {//es de nuestra propiedad
+							ciudadesNeutrales.add(ciudades[i]) ;
+			}
+		}
+		
+    	return ciudadesNeutrales; 
+	}
+	
+	
+	protected ArrayList<Integer> ciudadesNeutralConocidas() {// devuelve las posiciones de las ciudad neutrales que conocemos 
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
 		int ciudades[] = moduloPercepcion.getCiudades();
 		ArrayList<Integer> ciudadesNeutrales = new ArrayList<Integer>();
 		
 		for(int i=0;i<ciudades.length;i++) {
 			if(moduloPercepcion.terrenoCasilla(ciudades[i])==-1) {//-1=neutral visible -3 neutral invisible
+
 				ciudadesNeutrales.add(ciudades[i]) ;
 			}
 		}
@@ -639,6 +661,7 @@ public abstract class ModuloDecision {
 	protected int ejercitoDisponible(int casilla) {
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
 		int ejercito = moduloPercepcion.unidadesCasilla(casilla);
+		/*
 		if(moduloPercepcion.esNuestroGeneral(casilla)||moduloPercepcion.esCiudad(casilla)) {
 			int defensaMinima = defensaMinima(casilla);
 			//System.out.println("defensa minima "+defensaMinima);
@@ -646,6 +669,8 @@ public abstract class ModuloDecision {
 				return ejercito/2;
 			else return 0;
 		}else return ejercito;
+		*/
+		return ejercito;
 	}
 	
 	protected Coordenadas AplicarMovimiento(Coordenadas origen,int direc) {

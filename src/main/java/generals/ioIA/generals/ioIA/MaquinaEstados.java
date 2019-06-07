@@ -72,6 +72,7 @@ public class MaquinaEstados extends ModuloDecision{
 		int turno = moduloPercepcion.getTurno();
 		int[] generalEnPeligro = generalEnPeligro(distanciaSeguridad);
 		ArrayList<Integer> generalesEnemigos = generalesEnemigosConocidos();
+		ArrayList<Integer> ciudadesPropias = ciudadesPropias();
 		int generalElegido = -1;
 		int ejercitoElegidoContraGeneral = -1;
 		
@@ -120,7 +121,8 @@ public class MaquinaEstados extends ModuloDecision{
 				estado = "Ataque";
 				datosEstado = new int[]{generalElegido,ejercitoElegidoContraGeneral};
 			
-			}else if(ciudadesEnemigas.size()>0&&ciudadElegida!=-1&&turno>faseInicial) {//hay una ciudad objetivo, tenemos ejercito y ya no estamos en la fase inicial
+
+			}else if(ciudadesEnemigas.size()>0&&ciudadElegida!=-1&&ciudadesPropias.size()<(turno/turnosCadaCiudad)) {//hay una ciudad objetivo, tenemos ejercito y tenemos menos ciudades de las que deseamos este turno
 				estado = "Conquista";
 				datosEstado = new int[]{ciudadElegida,ejercitoElegidoContraCiudad};
 			}else if(((generalesEnemigos.size()>0&&generalElegido==-1)||(ciudadesEnemigas.size()>0&&ciudadElegida==-1))&&turno>faseInicial) {//tenemos objetivos pero no ejercito  y ya no estamos en la fase inicial
