@@ -111,13 +111,13 @@ public class MaquinaEstados extends ModuloDecision{
 		
 		
 		if(estado ==  "Expansion") {	
-			if(generalEnPeligro!=null)//Nuestro general esta en peligro
+			/*if(generalEnPeligro!=null)//Nuestro general esta en peligro
 			{
 				int general = generalEnPeligro[0];
 				int unidadesEnemigas = moduloPercepcion.unidadesCasilla(generalEnPeligro[1]);
 				estado = "Defensa";
 				datosEstado = new int[] {general,unidadesEnemigas};//introducimos en los datos del estado la posicion del general y de las unidades enemigas
-			}else if(generalesEnemigos.size()>0&&generalElegido!=-1) {//hay un general objetivo y tenemos ejercito
+			}else*/ if(generalesEnemigos.size()>0&&generalElegido!=-1) {//hay un general objetivo y tenemos ejercito
 				estado = "Ataque";
 				datosEstado = new int[]{generalElegido,ejercitoElegidoContraGeneral};
 			

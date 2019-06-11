@@ -113,6 +113,32 @@ public class Bot extends Thread{
 
         });
 		
+		socket.on("game_start",  new Emitter.Listener() {
+        	public void call(Object... args) {
+        		gameStart(args);	
+        	}
+        });
+		
+		socket.on("game_update",  new Emitter.Listener() {
+        	public void call(Object... args) {
+        		gameUpdate(args);
+        		
+        			
+        	}
+        });
+		
+		socket.on("game_lost",  new Emitter.Listener() {
+        	public void call(Object... args) {
+        		lose(args);
+        	}
+        });
+		
+		socket.on("game_win",  new Emitter.Listener() {
+        	public void call(Object... args) {
+        		win(args);
+        	}
+        });
+		
 		socket.connect();
 		
 		
@@ -146,32 +172,6 @@ public class Bot extends Thread{
 		Thread.sleep(3000);
 		socket.emit("set_force_start",gameId, true);
 		
-		socket.on("game_start",  new Emitter.Listener() {
-        	public void call(Object... args) {
-        		gameStart(args);	
-        	}
-        });
-		
-		socket.on("game_update",  new Emitter.Listener() {
-        	public void call(Object... args) {
-        		gameUpdate(args);
-        		
-        			
-        	}
-        });
-		
-		socket.on("game_lost",  new Emitter.Listener() {
-        	public void call(Object... args) {
-        		lose(args);
-        	}
-        });
-		
-		socket.on("game_win",  new Emitter.Listener() {
-        	public void call(Object... args) {
-        		win(args);
-        	}
-        });
-		
 		socket.on("chat_message",new Emitter.Listener() {
         	public void call(Object... args) {
         		JSONObject argsjson = (JSONObject) args[1];
@@ -203,31 +203,7 @@ public class Bot extends Thread{
 		Thread.sleep(3000);
 		socket.emit("set_force_start", true);
 		
-		socket.on("game_start",  new Emitter.Listener() {
-        	public void call(Object... args) {
-        		gameStart(args);	
-        	}
-        });
 		
-		socket.on("game_update",  new Emitter.Listener() {
-        	public void call(Object... args) {
-        		gameUpdate(args);
-        		
-        			
-        	}
-        });
-		
-		socket.on("game_lost",  new Emitter.Listener() {
-        	public void call(Object... args) {
-        		lose(args);
-        	}
-        });
-		
-		socket.on("game_win",  new Emitter.Listener() {
-        	public void call(Object... args) {
-        		win(args);
-        	}
-        });
 		
 		socket.on("chat_message",new Emitter.Listener() {
         	public void call(Object... args) {
