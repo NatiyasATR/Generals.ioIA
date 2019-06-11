@@ -18,7 +18,7 @@ public abstract class ModuloDecision {
 	protected static final float factorDeSeguridadTurno = 0.1f; //0.5 significa que en el turno 100 deben permanecer 50 unidades en una ciudad o el general
 	protected static final int faseInicial = 100; //Turno en el que se considera acabada la fase inicial
 	protected static final int minimoTamañoExploracion = 10; //minimo numero de unidades para explorar
-	protected static final int turnosCadaCiudad  = 50; //50 significa que en el turno 200 querremos 4 ciudades
+	protected static final int turnosCadaCiudad  = 100; //50 significa que en el turno 200 querremos 4 ciudades
 	
 	ModuloDecision(Bot bot){
 		this.bot=bot;
@@ -111,7 +111,7 @@ public abstract class ModuloDecision {
 			//si no hay mas casillas del enemigo o nos hemos quedado sin unidades, selecccionamos un nuevo objetivo
 			if(resul == null||moduloPercepcion.terrenoCasilla(posicion)!=moduloPercepcion.getEquipo()||moduloPercepcion.unidadesCasilla(posicion)<=1) {
 				avisos++;
-				if(avisos>3) {// a los tres avisos selecccionamos un nuevo movimiento
+				if(avisos>1) {// a los tres avisos selecccionamos un nuevo movimiento
 					tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
 					avisos=0;
 				}
@@ -129,7 +129,7 @@ public abstract class ModuloDecision {
 		//Si el movimiento no se puede continuar por que nos hemos quedado sin unidades damos un aviso
 		if(moduloPercepcion.terrenoCasilla(origen)!=moduloPercepcion.getEquipo()||moduloPercepcion.unidadesCasilla(origen)<=1)
 			avisos++;
-		if(avisos>3) {// a los tres avisos selecccionamos un nuevo movimiento
+		if(avisos>1) {// a los tres avisos selecccionamos un nuevo movimiento
 			tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
 			avisos=0;
 		}
@@ -527,10 +527,10 @@ public abstract class ModuloDecision {
 		coordenadasObjetivo.setCoordenadasCasilla(casillaObjetivo, ancho);
 		
 		int resul = -1;
-		int distanciaMinima = Integer.MAX_VALUE;
+		float distanciaMinima = Float.MAX_VALUE;
 		
 		for(Integer casillaValida : casillasValidas) {
-			int distancia = moduloNavegacion.heuristica(casillaValida, casillaObjetivo);
+			float distancia = moduloNavegacion.distanciaManhattan(casillaValida, casillaObjetivo);
 			if(distancia<distanciaMinima) {
 				resul = casillaValida;
 				distanciaMinima = distancia;

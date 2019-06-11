@@ -263,7 +263,7 @@ public class Bot extends Thread{
 		
 		String text = ta.getText();
 		
-		text+="Comenzado partida. La repeticion estara disponible en: http://bot.generals.io/replays/"
+		text+="\n\n"+"Comenzado partida. La repeticion estara disponible en: http://bot.generals.io/replays/"
 	    		+ Utilities.encodeURIComponent(repeticionId)+"\n";
 		ta.setText(text);
 		frame.pack();
@@ -300,9 +300,15 @@ public class Bot extends Thread{
 	
 	private void lose(Object... args) {
 		JSONObject argsjson = (JSONObject) args[0];
-		String text = ta.getText();
-		text+="Derrotado: "+ argsjson+"\n";
-		ta.setText(text);
+		try {
+			String text = ta.getText();
+			text+="Derrotado, asesino: "+ argsjson.getInt("killer");
+			ta.setText(text);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		salirPartida();
 		
 		lock.lock();
@@ -321,6 +327,7 @@ public class Bot extends Thread{
 		socket.emit("surrender");
 	}
 	public void salirPartida() {
+		System.out.println("abandonando partida");
 		socket.emit("leave_game");	
 	}
 	public void desconectar() {

@@ -125,7 +125,7 @@ public class MaquinaEstados extends ModuloDecision{
 			}else if(ciudadesEnemigas.size()>0&&ciudadElegida!=-1&&ciudadesPropias.size()<(turno/turnosCadaCiudad)) {//hay una ciudad objetivo, tenemos ejercito y tenemos menos ciudades de las que deseamos este turno
 				estado = "Conquista";
 				datosEstado = new int[]{ciudadElegida,ejercitoElegidoContraCiudad};
-			}else if(((generalesEnemigos.size()>0&&generalElegido==-1)||(ciudadesEnemigas.size()>0&&ciudadElegida==-1))&&turno>faseInicial) {//tenemos objetivos pero no ejercito  y ya no estamos en la fase inicial
+			}else if(((generalesEnemigos.size()>0&&generalElegido==-1)||(ciudadesEnemigas.size()>0&&ciudadElegida==-1))&&ciudadesPropias.size()<(turno/turnosCadaCiudad)) {//tenemos objetivos pero no ejercito y tenemos menos ciudades de las que deseamos este turno
 				estado = "Reagrupar";
 			}// si no hay nada mas que hacer seguimos expandiendo
 			

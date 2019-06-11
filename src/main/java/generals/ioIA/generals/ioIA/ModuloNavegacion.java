@@ -9,6 +9,8 @@ public class ModuloNavegacion {
 	
 	private Bot bot;
 	
+	private static final float costeUnidades = 0.5f;
+	
 	ModuloNavegacion(Bot bot) throws IOException{
 		this.bot=bot;
 		//BufferedWriter writer = new BufferedWriter(new FileWriter("C:/Users/ALVARO/Desktop/ModuloNavegacionLog"+bot.getBotId()+".txt"));
@@ -17,9 +19,9 @@ public class ModuloNavegacion {
 	public int[] calcularCaminoEntrePuntos(int origen,int destino) {//usando A*
 		class Nodo {
 			public ArrayList<Integer> camino;
-			public int distanciaRecorrida;//g
-			public int heuristica;//h
-			Nodo(ArrayList<Integer> camino, int distanciaRecorrida, int heuristica) {
+			public float distanciaRecorrida;//g
+			public float heuristica;//h
+			Nodo(ArrayList<Integer> camino, float distanciaRecorrida, float heuristica) {
 				this.camino = camino;
 				this.distanciaRecorrida = distanciaRecorrida;
 				this.heuristica = heuristica;
@@ -82,14 +84,15 @@ public class ModuloNavegacion {
 			for(Integer sucesor : sucesores) {
 				if(sucesor == destino) {//hemos encontrado el camino
 					nodoActual.camino.add(sucesor);
+					System.out.println("Coste del camino: "+nodoActual.distanciaRecorrida);
 					int resul[]=new int[nodoActual.camino.size()];
 					for(int i=0;i<resul.length;i++)
 						resul[i]=nodoActual.camino.get(i).intValue();
 			    	return resul;  
 				}else {// si no es el que buscamos miramos si esta en alguna de las listas con un g+h menor
 					boolean mejorCaminoEncontrado = false;
-					int g = nodoActual.distanciaRecorrida+1;
-					int h = heuristica(sucesor,destino);
+					float g = nodoActual.distanciaRecorrida+1+costePorUnidades(sucesor);
+					float h = heuristica(sucesor,destino);
 					for(Nodo nodo : listaAbierta) { // lo buscamos en la lista Abierta
 						ArrayList <Integer> camino = nodo.camino;
 						
@@ -136,13 +139,32 @@ public class ModuloNavegacion {
 	}
 	
 	
-	public int heuristica(int origen, int objetivo) {//usando Manhattan 
-		int ancho = bot.getModuloPercepcion().getAncho();
+	public float heuristica(int origen, int objetivo) {//usando Manhattan 
+		int distaciaManhattan = distanciaManhattan(origen, objetivo);
+		//float costePorUnidades = costePorUnidades(objetivo);
+		return distaciaManhattan/*+costePorUnidades*/;
+		
+	}
+	
+	public int distanciaManhattan(int origen, int objetivo) {
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int ancho = moduloPercepcion.getAncho();
 		Coordenadas coordenadasOrigen = new Coordenadas();
 		coordenadasOrigen.setCoordenadasCasilla(origen, ancho);
 		Coordenadas coordenadasObjetivo = new Coordenadas();
 		coordenadasObjetivo.setCoordenadasCasilla(objetivo, ancho);
-		
 		return Math.abs(coordenadasOrigen.getX()-coordenadasObjetivo.getX())+Math.abs(coordenadasOrigen.getY()-coordenadasObjetivo.getY());
+	}
+	
+	public float costePorUnidades(int casilla) {//funcion que nos devuelve un coste por las unidades que hay en esa casilla, puede ser negativo si son unidades aliadas
+		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int unidadesObjetivo =  moduloPercepcion.unidadesCasilla(casilla);
+		int terreno = moduloPercepcion.terrenoCasilla(casilla);
+		int equipo = moduloPercepcion.getEquipo();
+		if(terreno==equipo)//si controlamos la casilla, multiplicamos por -1 por que pasan a se beneficiosas
+			unidadesObjetivo = 0;
+			//unidadesObjetivo*=-1;
+		unidadesObjetivo++; //siempre tenemos que dejar una unidad en cada casilla
+		return unidadesObjetivo/costeUnidades;
 	}
 }
