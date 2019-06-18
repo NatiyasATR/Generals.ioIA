@@ -118,7 +118,7 @@ public abstract class ModuloDecision {
 			//si no hay mas casillas del enemigo o nos hemos quedado sin unidades, selecccionamos un nuevo objetivo
 			if(resul == null||moduloPercepcion.terrenoCasilla(posicion)!=moduloPercepcion.getEquipo()||moduloPercepcion.unidadesCasilla(posicion)<=1) {
 				avisos++;
-				if(avisos>1) {// a los tres avisos selecccionamos un nuevo movimiento
+				if(avisos>1) {// a los dos avisos selecccionamos un nuevo movimiento
 					tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
 					avisos=0;
 				}
@@ -136,7 +136,7 @@ public abstract class ModuloDecision {
 		//Si el movimiento no se puede continuar por que nos hemos quedado sin unidades damos un aviso
 		if(moduloPercepcion.terrenoCasilla(origen)!=moduloPercepcion.getEquipo()||moduloPercepcion.unidadesCasilla(origen)<=1)
 			avisos++;
-		if(avisos>1) {// a los tres avisos selecccionamos un nuevo movimiento
+		if(avisos>1) {// a los dos avisos selecccionamos un nuevo movimiento
 			tomaDecision();//actualiza movimientoActual y posicionMovimientoActual
 			avisos=0;
 		}

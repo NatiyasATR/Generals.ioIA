@@ -140,6 +140,19 @@ public class Bot extends Thread{
         	}
         });
 		
+		socket.on("chat_message",new Emitter.Listener() {
+        	public void call(Object... args) {
+        		JSONObject argsjson = (JSONObject) args[1];
+        		try {
+					System.out.println(argsjson.get("text"));
+					socket.emit("set_force_start", true);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        });
+		
 		socket.connect();
 		
 		
@@ -173,22 +186,7 @@ public class Bot extends Thread{
 	        		+ Utilities.encodeURIComponent(gameId));
 		Thread.sleep(3000);
 		socket.emit("set_force_start",gameId, true);
-		
-		socket.on("chat_message",new Emitter.Listener() {
-        	public void call(Object... args) {
-        		JSONObject argsjson = (JSONObject) args[1];
-        		try {
-					System.out.println(argsjson.get("text"));
-					socket.emit("set_force_start",gameId, true);
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-        	}
-        });
-		
-		
-		
+			
 		lock.lock();
 		try{
 			while(!partidaFinalizada) {
@@ -209,19 +207,6 @@ public class Bot extends Thread{
 		socket.emit("set_force_start", true);
 		
 		
-		
-		socket.on("chat_message",new Emitter.Listener() {
-        	public void call(Object... args) {
-        		JSONObject argsjson = (JSONObject) args[1];
-        		try {
-					System.out.println(argsjson.get("text"));
-					socket.emit("set_force_start", true);
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-        	}
-        });
 		
 		
 		
