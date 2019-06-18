@@ -94,9 +94,6 @@ public class MaquinaEstados extends ModuloDecision{
 		for(int i=0;i<ciudadesEnemigas.size();i++) {//buscamos combinaciones ciudad enemigo - ejercito
 			int ciudad = ciudadesEnemigas.get(i);
 			int unidadesCiudad = moduloPercepcion.unidadesCasilla(ciudad);
-			//System.out.println(ciudad);
-			//System.out.println(unidadesCiudad);
-			//System.out.println(Math.round(unidadesCiudad*proporcionSuperioridad)+1);
 			ArrayList<Integer> ejercitos = ejercitosPropiosMayoresQue(Math.round(unidadesCiudad*proporcionSuperioridad)+1);
 			if(ejercitos.size()>0) {// existe al menos un ejercito que pueda atacar esta ciudad
 				ciudadElegida = ciudad;
@@ -111,13 +108,13 @@ public class MaquinaEstados extends ModuloDecision{
 		
 		
 		if(estado ==  "Expansion") {	
-			/*if(generalEnPeligro!=null)//Nuestro general esta en peligro
+			if(generalEnPeligro!=null)//Nuestro general esta en peligro
 			{
 				int general = generalEnPeligro[0];
 				int unidadesEnemigas = moduloPercepcion.unidadesCasilla(generalEnPeligro[1]);
 				estado = "Defensa";
 				datosEstado = new int[] {general,unidadesEnemigas};//introducimos en los datos del estado la posicion del general y de las unidades enemigas
-			}else*/ if(generalesEnemigos.size()>0&&generalElegido!=-1) {//hay un general objetivo y tenemos ejercito
+			}else if(generalesEnemigos.size()>0&&generalElegido!=-1) {//hay un general objetivo y tenemos ejercito
 				estado = "Ataque";
 				datosEstado = new int[]{generalElegido,ejercitoElegidoContraGeneral};
 			
@@ -125,7 +122,7 @@ public class MaquinaEstados extends ModuloDecision{
 			}else if(ciudadesEnemigas.size()>0&&ciudadElegida!=-1&&ciudadesPropias.size()<(turno/turnosCadaCiudad)) {//hay una ciudad objetivo, tenemos ejercito y tenemos menos ciudades de las que deseamos este turno
 				estado = "Conquista";
 				datosEstado = new int[]{ciudadElegida,ejercitoElegidoContraCiudad};
-			}else if(((generalesEnemigos.size()>0&&generalElegido==-1)||(ciudadesEnemigas.size()>0&&ciudadElegida==-1))&&ciudadesPropias.size()<(turno/turnosCadaCiudad)) {//tenemos objetivos pero no ejercito y tenemos menos ciudades de las que deseamos este turno
+			}else if((generalesEnemigos.size()>0&&generalElegido==-1)||(ciudadesEnemigas.size()>0&&ciudadElegida==-1&&ciudadesPropias.size()<(turno/turnosCadaCiudad))) {//tenemos objetivos pero no ejercito si el objetivo es una ciudad tenemos menos ciudades de las que deseamos este turno
 				estado = "Reagrupar";
 			}// si no hay nada mas que hacer seguimos expandiendo
 			
@@ -161,10 +158,10 @@ public class MaquinaEstados extends ModuloDecision{
 				estado = "Ataque";
 				datosEstado = new int[]{generalElegido,ejercitoElegidoContraGeneral};
 			
-			}else if(ciudadesEnemigas.size()>0&&ciudadElegida!=-1) {//hay una ciudad objetivo y tenemos ejercito
+			}else if(ciudadesEnemigas.size()>0&&ciudadElegida!=-1&&ciudadesPropias.size()<(turno/turnosCadaCiudad)) {//hay una ciudad objetivo, tenemos ejercito y queremos mas ciudades
 				estado = "Conquista";
 				datosEstado = new int[]{ciudadElegida,ejercitoElegidoContraCiudad};
-			}else if(ciudadesEnemigas.size()==0&&generalesEnemigos.size()==0) {//Hemos perdido de vista todos los posibles objetivos
+			}else if((ciudadesEnemigas.size()==0||ciudadesPropias.size()>=(turno/turnosCadaCiudad))&&generalesEnemigos.size()==0) {//Hemos perdido de vista todos los posibles objetivos o seguimos viendo ciudades (y no generales) pero ya no queremos mas
 				estado = "Expansion";
 			}//si no se cumple nada seguimos reagrupando
 			
@@ -282,13 +279,15 @@ public class MaquinaEstados extends ModuloDecision{
 	
 	private void actualizarSubestadoExpansion() {
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
+		int turno = moduloPercepcion.getTurno();
+		ArrayList<Integer> ciudadesPropias = ciudadesPropias();
 		
 		if(subestadoExpansion=="ExplorarDesconocido") {
 			ArrayList<Integer> ciudadesPerdidasDeVista = moduloPercepcion.ciudadesPerdidasDeVista();
 			ArrayList<Integer> generalesPerdidosDeVista = moduloPercepcion.generalesPerdidosDeVista();
 			if(generalesPerdidosDeVista.size()>0)
 				subestadoExpansion="ExplorarGeneralesPerdidosDeVista";
-			else if(ciudadesPerdidasDeVista.size()>0)
+			else if(ciudadesPerdidasDeVista.size()>0&&ciudadesPropias.size()<(turno/turnosCadaCiudad))
 				subestadoExpansion="ExplorarCiudadesPerdidasDeVista";
 			else subestadoExpansion="Expansion";
 			

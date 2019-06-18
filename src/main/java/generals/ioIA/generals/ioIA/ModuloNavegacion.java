@@ -139,7 +139,7 @@ public class ModuloNavegacion {
 	}
 	
 	
-	public float heuristica(int origen, int objetivo) {//usando Manhattan 
+	private float heuristica(int origen, int objetivo) {//usando Manhattan 
 		int distaciaManhattan = distanciaManhattan(origen, objetivo);
 		//float costePorUnidades = costePorUnidades(objetivo);
 		return distaciaManhattan/*+costePorUnidades*/;
@@ -156,7 +156,7 @@ public class ModuloNavegacion {
 		return Math.abs(coordenadasOrigen.getX()-coordenadasObjetivo.getX())+Math.abs(coordenadasOrigen.getY()-coordenadasObjetivo.getY());
 	}
 	
-	public float costePorUnidades(int casilla) {//funcion que nos devuelve un coste por las unidades que hay en esa casilla, puede ser negativo si son unidades aliadas
+	private float costePorUnidades(int casilla) {//funcion que nos devuelve un coste por las unidades que hay en esa casilla, puede ser negativo si son unidades aliadas
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
 		int unidadesObjetivo =  moduloPercepcion.unidadesCasilla(casilla);
 		int terreno = moduloPercepcion.terrenoCasilla(casilla);

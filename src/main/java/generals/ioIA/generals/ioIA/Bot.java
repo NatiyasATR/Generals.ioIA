@@ -69,8 +69,9 @@ public class Bot extends Thread{
 	
 	public void run(){
 		try {
+			conectarse();
 			while(tipoPartida!=null) {
-				conectarse();
+				
 				if(tipoPartida=="Privada")
 					unirsePartidaPersonalizada(partidaId);
 				else if(tipoPartida=="FFA")
@@ -166,6 +167,7 @@ public class Bot extends Thread{
 	
 	public void unirsePartidaPersonalizada(final String gameId) throws InterruptedException {
 		partidaFinalizada = false;
+		moduloDecision.resetearDatos();
 		socket.emit("join_private", gameId, botId);
 		 System.out.println(botName + " joined custom game at http://bot.generals.io/games/" 
 	        		+ Utilities.encodeURIComponent(gameId));
@@ -185,6 +187,8 @@ public class Bot extends Thread{
         	}
         });
 		
+		
+		
 		lock.lock();
 		try{
 			while(!partidaFinalizada) {
@@ -199,6 +203,7 @@ public class Bot extends Thread{
 	
 	public void unirseFFA() throws InterruptedException {
 		partidaFinalizada = false;
+		moduloDecision.resetearDatos();
 		socket.emit("play", botId);
 		Thread.sleep(3000);
 		socket.emit("set_force_start", true);

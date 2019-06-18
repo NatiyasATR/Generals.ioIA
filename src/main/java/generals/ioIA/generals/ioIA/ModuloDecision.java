@@ -28,6 +28,13 @@ public abstract class ModuloDecision {
 		direccion = -1;
 	}
 	
+	public void resetearDatos() {
+		movimientoActual = null;
+		posicionMovimientoActual =-1;
+		avisos=0;
+		direccion = -1;
+	}
+	
 	public int[] movimientoAleatorio() {
 		
 		int alto = bot.getModuloPercepcion().getAlto();
@@ -139,12 +146,12 @@ public abstract class ModuloDecision {
 		
 		resul.origen=origen;
 		resul.destino=destino;
-		/*
+		
 		if(moduloPercepcion.esCiudad(origen)||moduloPercepcion.esNuestroGeneral(origen))
 			resul.is50 = true;
 		else resul.is50 = false;
-		*/
-		resul.is50 = false;
+		
+		//resul.is50 = false;
 		
 		posicionMovimientoActual++;
 		
@@ -661,7 +668,7 @@ public abstract class ModuloDecision {
 	protected int ejercitoDisponible(int casilla) {
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
 		int ejercito = moduloPercepcion.unidadesCasilla(casilla);
-		/*
+		
 		if(moduloPercepcion.esNuestroGeneral(casilla)||moduloPercepcion.esCiudad(casilla)) {
 			int defensaMinima = defensaMinima(casilla);
 			//System.out.println("defensa minima "+defensaMinima);
@@ -669,8 +676,8 @@ public abstract class ModuloDecision {
 				return ejercito/2;
 			else return 0;
 		}else return ejercito;
-		*/
-		return ejercito;
+		
+		//return ejercito;
 	}
 	
 	protected Coordenadas AplicarMovimiento(Coordenadas origen,int direc) {
