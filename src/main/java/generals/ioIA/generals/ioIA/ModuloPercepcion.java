@@ -32,6 +32,16 @@ public class ModuloPercepcion {
 		
 	}
 	
+	public void resetearDatos() {
+		ciudades=new int[0];
+		mapa=new int[0];
+		equipo=-10;
+		ciudadesConocidas = new ArrayList<Integer>();
+		casillasInacesibles = new ArrayList<Integer>();
+		generalesConocidos = null;
+		ataquesPendientes = 0;
+	}
+	
 	public void iniciarPartidaDatos(JSONObject argsjson) {
 		
 		ciudades=new int[0];

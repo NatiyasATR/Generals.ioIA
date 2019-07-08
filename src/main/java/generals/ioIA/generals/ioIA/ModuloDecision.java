@@ -151,7 +151,6 @@ public abstract class ModuloDecision {
 			resul.is50 = true;
 		else resul.is50 = false;
 		
-		//resul.is50 = false;
 		
 		posicionMovimientoActual++;
 		
@@ -676,8 +675,7 @@ public abstract class ModuloDecision {
 				return ejercito/2;
 			else return 0;
 		}else return ejercito;
-		
-		//return ejercito;
+
 	}
 	
 	protected Coordenadas AplicarMovimiento(Coordenadas origen,int direc) {

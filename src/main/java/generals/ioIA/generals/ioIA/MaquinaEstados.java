@@ -14,6 +14,8 @@ public class MaquinaEstados extends ModuloDecision{
 		estado = "Expansion";
 		subestadoExpansion = "ExplorarDesconocido";
 	}
+	
+	
 
 	public void tomaDecision() {
 		ModuloPercepcion moduloPercepcion = bot.getModuloPercepcion();
